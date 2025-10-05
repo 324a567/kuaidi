@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>快递物品尺寸判断</title>
+    <!-- 引入Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 引入Font Awesome图标 -->
+    <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+    
+    <!-- Tailwind配置 -->
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#4F46E5', // 主色调：靛蓝色
+                        secondary: '#10B981', // 中件颜色：绿色
+                        accent: '#F59E0B', // 大件颜色：琥珀色
+                        light: '#F3F4F6',
+                        dark: '#1F2937'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'system-ui', 'sans-serif'],
+                    },
+                }
+            }
+        }
+    </script>
+    
+    <style type="text/tailwindcss">
+        @layer utilities {
+            .content-auto {
+                content-visibility: auto;
+            }
+            .shadow-soft {
+                box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            }
+            .transition-all-300 {
+                transition: all 0.3s ease;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-indigo-50 to-blue-50 min-h-screen font-sans">
+    <div class="container mx-auto px-4 py-8 md:py-16 max-w-4xl">
+        <!-- 页面标题 -->
+        <header class="text-center mb-8 md:mb-12">
+            <h1 class="text-[clamp(1.8rem,5vw,3rem)] font-bold text-dark mb-4 tracking-tight">
+                快递物品尺寸判断
+            </h1>
+            <p class="text-gray-600 text-base md:text-lg max-w-2xl mx-auto">
+                输入您要寄送的物品名称，系统将自动判断它属于小件、中件还是大件
+            </p>
+        </header>
+        
+        <!-- 主内容区 -->
+        <main class="bg-white rounded-2xl shadow-soft p-6 md:p-8 mb-10 transform hover:shadow-lg transition-all-300">
+            <!-- 输入区域 -->
+            <div class="mb-8">
+                <label for="itemInput" class="block text-gray-700 text-lg font-medium mb-2">
+                    请输入物品名称：
+                </label>
+                <div class="flex flex-col sm:flex-row gap-4">
+                    <input 
+                        type="text" 
+                        id="itemInput" 
+                        placeholder="例如：一个耳机、一台电风扇" 
+                        class="flex-grow px-5 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary focus:border-primary outline-none transition-all-300"
+                    >
+                    <button 
+                        id="checkButton" 
+                        class="bg-primary hover:bg-primary/90 text-white font-semibold px-6 py-3 rounded-lg transition-all-300 flex items-center justify-center gap-2"
+                    >
+                        <i class="fa fa-search"></i>
+                        <span>判断尺寸</span>
+                    </button>
+                </div>
+            </div>
+            
+            <!-- 结果展示区域 -->
+            <div id="resultArea" class="hidden">
+                <div class="p-6 rounded-xl border-2 transition-all-300" id="resultCard">
+                    <div class="flex items-center gap-4 mb-4">
+                        <div id="resultIcon" class="w-12 h-12 rounded-full flex items-center justify-center text-white text-xl"></div>
+                        <h2 id="resultTitle" class="text-2xl font-bold text-dark"></h2>
+                    </div>
+                    <p id="resultDescription" class="text-gray-600 text-lg"></p>
+                </div>
+            </div>
+            
+            <!-- 尺寸标准说明 - 使用更通俗易懂的例子 -->
+            <div class="mt-8 pt-6 border-t border-gray-200">
+                <h3 class="text-xl font-semibold text-dark mb-4">尺寸判断标准</h3>
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <div class="flex items-center gap-2 text-blue-600 mb-2">
+                            <i class="fa fa-book"></i>
+                            <h4 class="font-medium">小件</h4>
+                        </div>
+                        <p class="text-sm text-gray-600">
+                            像书本、手机、耳机、钱包这类大小的物品，
+                            最大不超过两本厚字典叠起来的大小
+                        </p>
+                    </div>
+                    <div class="bg-green-50 p-4 rounded-lg border border-green-100">
+                        <div class="flex items-center gap-2 text-green-600 mb-2">
+                            <i class="fa fa-box"></i>
+                            <h4 class="font-medium">中件</h4>
+                        </div>
+                        <p class="text-sm text-gray-600">
+                            类似微波炉、电饭煲、小型行李箱这类物品，
+                            最大不超过一个普通洗衣机纸箱的大小
+                        </p>
+                    </div>
+                    <div class="bg-amber-50 p-4 rounded-lg border border-amber-100">
+                        <div class="flex items-center gap-2 text-amber-600 mb-2">
+                            <i class="fa fa-cube"></i>
+                            <h4 class="font-medium">大件</h4>
+                        </div>
+                        <p class="text-sm text-gray-600">
+                            像冰箱、洗衣机、床垫、电视机这类物品，
+                            通常需要两个人才能搬动
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </main>
+        
+        <!-- 常见物品示例 -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-dark mb-6 text-center">常见物品示例</h2>
+            <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-headphones text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">耳机</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-mobile text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">手机</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-laptop text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">笔记本电脑</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-television text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">电视机</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-clock-o text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">手表</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-gamepad text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">游戏机</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-snowflake-o text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">冰箱</p>
+                </button>
+                <button class="example-btn bg-white p-4 rounded-lg shadow hover:shadow-md transition-all-300 border border-gray-100 text-center">
+                    <i class="fa fa-bed text-primary text-2xl mb-2"></i>
+                    <p class="text-sm">床垫</p>
+                </button>
+            </div>
+        </section>
+        
+        <!-- 页脚 -->
+        <footer class="text-center text-gray-500 text-sm">
+            <p>© 2023 快递物品尺寸判断工具</p>
+        </footer>
+    </div>
+    
+    <script>
+        // 物品尺寸数据库 - 包含常见物品的分类
+        const itemSizeDatabase = {
+            // 小件物品
+            小件: [
+                "耳机", "手机", "手表", "钱包", "钥匙", "眼镜", "笔", "笔记本", 
+                "书籍", "杂志", "U盘", "充电器", "充电宝", "小型相机",
+                "首饰", "口红", "粉饼", "小化妆品", "打火机", "香烟",
+                "存储卡", "电池", "小型玩具", "明信片", "信件", "小型工具"
+            ],
+            
+            // 中件物品
+            中件: [
+                "笔记本电脑", "平板电脑", "相机", "小型打印机", "电饭煲", "微波炉",
+                "电风扇", "电熨斗", "小型音箱", "鞋盒", "小型背包", "中型书包",
+                "吹风机", "卷发棒", "小型烤箱", "游戏机", "中型玩具", "厨房用具套装",
+                "小型健身器材", "行李箱（小）", "小型家电", "桌面摆件", "灯具（小型）"
+            ],
+            
+            // 大件物品
+            大件: [
+                "冰箱", "洗衣机", "电视机", "空调", "床垫", "沙发", "衣柜",
+                "餐桌", "椅子", "书桌", "跑步机", "自行车", "大型行李箱",
+                "婴儿车", "家具", "大型家电", "乐器（大型）", "行李箱（大）",
+                "床架", "电视（大屏幕）", "按摩椅", "大型音响", "洗衣机",
+                "跑步机", "椭圆机", "橱柜"
+            ]
+        };
+        
+        // 关键词判断规则 - 帮助识别物品大小
+        const keywordRules = {
+            小件: ["小", "迷你", "微型", "小巧", "便携"],
+            中件: ["中", "中型", "常规", "标准"],
+            大件: ["大", "巨型", "大型", "超大", "重型"]
+        };
+        
+        // 获取DOM元素
+        const itemInput = document.getElementById('itemInput');
+        const checkButton = document.getElementById('checkButton');
+        const resultArea = document.getElementById('resultArea');
+        const resultCard = document.getElementById('resultCard');
+        const resultTitle = document.getElementById('resultTitle');
+        const resultDescription = document.getElementById('resultDescription');
+        const resultIcon = document.getElementById('resultIcon');
+        const exampleButtons = document.querySelectorAll('.example-btn');
+        
+        // 判断物品尺寸的函数
+        function determineSize(itemName) {
+            if (!itemName || itemName.trim() === '') {
+                return null;
+            }
+            
+            const normalizedName = itemName.toLowerCase().trim();
+            
+            // 先检查关键词（如"大型冰箱"中的"大型"）
+            for (const [size, keywords] of Object.entries(keywordRules)) {
+                for (const keyword of keywords) {
+                    if (normalizedName.includes(keyword)) {
+                        return size;
+                    }
+                }
+            }
+            
+            // 检查物品数据库
+            for (const [size, items] of Object.entries(itemSizeDatabase)) {
+                for (const item of items) {
+                    if (normalizedName.includes(item.toLowerCase())) {
+                        return size;
+                    }
+                }
+            }
+            
+            // 如果没有匹配到，尝试根据描述猜测
+            if (normalizedName.includes("箱") || normalizedName.includes("盒") && 
+                !normalizedName.includes("大")) {
+                return "中件";
+            }
+            
+            if (normalizedName.includes("大型") || normalizedName.includes("大") ||
+                normalizedName.includes("重") || normalizedName.includes("公斤") && 
+                parseInt(normalizedName.match(/\d+/)) > 20) {
+                return "大件";
+            }
+            
+            // 默认小件（如果无法判断）
+            return "小件";
+        }
+        
+        // 显示结果的函数 - 也更新为更通俗的描述
+        function displayResult(size) {
+            if (!size) {
+                return;
+            }
+            
+            // 设置结果标题
+            resultTitle.textContent = `${size}`;
+            
+            // 根据尺寸设置不同的样式和描述
+            switch(size) {
+                case "小件":
+                    resultCard.className = "p-6 rounded-xl border-2 border-blue-200 bg-blue-50 transition-all-300";
+                    resultIcon.className = "w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center text-white text-xl";
+                    resultIcon.innerHTML = '<i class="fa fa-book"></i>';
+                    resultDescription.textContent = "您的物品属于小件，类似书本、手机大小，方便携带。";
+                    break;
+                    
+                case "中件":
+                    resultCard.className = "p-6 rounded-xl border-2 border-green-200 bg-green-50 transition-all-300";
+                    resultIcon.className = "w-12 h-12 rounded-full bg-green-500 flex items-center justify-center text-white text-xl";
+                    resultIcon.innerHTML = '<i class="fa fa-box"></i>';
+                    resultDescription.textContent = "您的物品属于中件，类似微波炉、电饭煲大小，一个人可以轻松搬动。";
+                    break;
+                    
+                case "大件":
+                    resultCard.className = "p-6 rounded-xl border-2 border-amber-200 bg-amber-50 transition-all-300";
+                    resultIcon.className = "w-12 h-12 rounded-full bg-amber-500 flex items-center justify-center text-white text-xl";
+                    resultIcon.innerHTML = '<i class="fa fa-cube"></i>';
+                    resultDescription.textContent = "您的物品属于大件，类似冰箱、洗衣机大小，可能需要两人协作搬运。";
+                    break;
+            }
+            
+            // 显示结果区域并添加动画
+            resultArea.classList.remove('hidden');
+            resultArea.classList.add('animate-fade-in');
+            
+            // 平滑滚动到结果区域
+            resultArea.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+        
+        // 事件监听器：判断按钮点击
+        checkButton.addEventListener('click', () => {
+            const itemName = itemInput.value;
+            const size = determineSize(itemName);
+            if (size) {
+                displayResult(size);
+            } else {
+                alert('请输入物品名称');
+            }
+        });
+        
+        // 事件监听器：回车键提交
+        itemInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                checkButton.click();
+            }
+        });
+        
+        // 事件监听器：示例按钮点击
+        exampleButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                const itemName = button.querySelector('p').textContent;
+                itemInput.value = itemName;
+                const size = determineSize(itemName);
+                displayResult(size);
+            });
+        });
+        
+        // 添加淡入动画
+        document.head.insertAdjacentHTML('beforeend', `
+            <style>
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-fade-in {
+                    animation: fadeIn 0.5s ease forwards;
+                }
+            </style>
+        `);
+    </script>
+</body>
+</html>
